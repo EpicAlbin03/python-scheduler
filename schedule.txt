@@ -1,4 +1,4 @@
 15:45:00 print Good morning!
-15:45:10 create_file log.txt
+15:45:10 create_file tmp.txt
 15:45:20 list_files .
 15:45:30 print All done!

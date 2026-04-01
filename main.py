@@ -22,15 +22,14 @@ def load_schedule(filename: str) -> list[Task]:
     # handle missing file gracefully
     try:
         with open(filename) as f:
-            for index, line in enumerate(f):
+            for line in f:
                 line = line.strip()
                 parts = line.split(" ")
                 time = parts[0]
                 action = parts[1]
                 args = " ".join(parts[2:])
-                isLastLine = index == (len(f.readlines()) - 1)
                 tasks.append(
-                    {"time": time, "action": action, "args": args, "done": isLastLine}
+                    {"time": time, "action": action, "args": args, "done": False}
                 )
     except FileNotFoundError:
         print(f"Schedule file '{filename}' not found.")
@@ -57,6 +56,10 @@ def run_scheduler() -> None:
         while True:
             now = datetime.now().strftime("%H:%M:%S")
             # TODO: loop through tasks, execute if time matches and not done
+            for task in tasks:
+                if task["time"] == now and not task["done"]:
+                    execute_action(task["action"], task["args"])
+                    task["done"] = True
             time.sleep(1)
     except KeyboardInterrupt:
         print("\nScheduler stopped.")

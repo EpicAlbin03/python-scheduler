@@ -1,26 +1,22 @@
 import os
 import time
 from datetime import datetime
-from typing import TypedDict
+from typing import Literal, TypedDict, cast
+
+Action = Literal["print", "list_files", "create_file"]
 
 
 class Task(TypedDict):
-    time: str
-    action: str
+    time: datetime
+    action: Action
     args: str
     done: bool
 
 
-def create_file(filename: str) -> None:
-    """Create an empty file with the given filename."""
-    with open(filename, "w"):
-        pass
-
-
-def list_files(directory: str) -> None:
-    """List files in the given directory."""
-    files = os.listdir(directory)
-    print(f"Files in '{directory}': {', '.join(files)}")
+def parse_action(value: str) -> Action | None:
+    if value in {"print", "list_files", "create_file"}:
+        return cast(Action, value)
+    return None
 
 
 def load_schedule(filename: str) -> list[Task]:
@@ -39,12 +35,24 @@ def load_schedule(filename: str) -> list[Task]:
                 line = line.strip()
                 if not line:
                     continue
-                parts = line.split(" ")
-                time = parts[0]
-                action = parts[1]
-                args = " ".join(parts[2:])
+                parts = line.split(maxsplit=2)
+                if len(parts) < 2:
+                    continue
+
+                time = datetime.strptime(parts[0], "%H:%M:%S")
+                action = parse_action(parts[1])
+                if action is None:
+                    print(f"Skipping invalid action: {parts[1]}")
+                    continue
+                args = parts[2]
+
                 tasks.append(
-                    {"time": time, "action": action, "args": args, "done": False}
+                    {
+                        "time": time,
+                        "action": action,
+                        "args": args,
+                        "done": False,
+                    }
                 )
     except FileNotFoundError:
         print(f"Schedule file '{filename}' not found.")
@@ -52,13 +60,36 @@ def load_schedule(filename: str) -> list[Task]:
     return tasks
 
 
-def execute_action(action: str, args: str) -> None:
+def create_file(filename: str) -> None:
+    """Create an empty file with the given filename."""
+    with open(filename, "w"):
+        pass
+
+
+def list_files(directory: str) -> None:
+    """List files in the given directory."""
+    files = os.listdir(directory)
+    print(f"Files in '{directory}': {', '.join(files)}")
+
+
+def execute_action(action: Action, args: str) -> None:
     """Execute a single action.
     Supported commands: print, list_files, create_file
     """
     # TODO: handle each command using action and args
-    eval(f"{action}('{args}')")
-    pass
+    match action:
+        case "print":
+            print(args)
+        case "list_files":
+            list_files(args)
+        case "create_file":
+            create_file(args)
+        case _:
+            print(f"Unknown action: {action}")
+
+    with open("log.txt", "a") as f:
+        now = datetime.now().strftime("%H:%M:%S")
+        f.write(f"{now} {action} {args}\n")
 
 
 def run_scheduler() -> None:

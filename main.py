@@ -1,3 +1,4 @@
+import os
 import time
 from datetime import datetime
 from typing import TypedDict
@@ -8,6 +9,18 @@ class Task(TypedDict):
     action: str
     args: str
     done: bool
+
+
+def create_file(filename: str) -> None:
+    """Create an empty file with the given filename."""
+    with open(filename, "w"):
+        pass
+
+
+def list_files(directory: str) -> None:
+    """List files in the given directory."""
+    files = os.listdir(directory)
+    print(f"Files in '{directory}': {', '.join(files)}")
 
 
 def load_schedule(filename: str) -> list[Task]:
@@ -24,6 +37,8 @@ def load_schedule(filename: str) -> list[Task]:
         with open(filename) as f:
             for line in f:
                 line = line.strip()
+                if not line:
+                    continue
                 parts = line.split(" ")
                 time = parts[0]
                 action = parts[1]
@@ -42,6 +57,7 @@ def execute_action(action: str, args: str) -> None:
     Supported commands: print, list_files, create_file
     """
     # TODO: handle each command using action and args
+    eval(f"{action}('{args}')")
     pass
 
 
@@ -57,7 +73,8 @@ def run_scheduler() -> None:
             now = datetime.now().strftime("%H:%M:%S")
             # TODO: loop through tasks, execute if time matches and not done
             for task in tasks:
-                if task["time"] == now and not task["done"]:
+                # if task["time"] == now and not task["done"]:
+                if not task["done"]:
                     execute_action(task["action"], task["args"])
                     task["done"] = True
             time.sleep(1)

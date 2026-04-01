@@ -1,6 +1,5 @@
-from datetime import datetime
 import time
-import os
+from datetime import datetime
 
 
 def load_schedule(filename):
@@ -13,6 +12,21 @@ def load_schedule(filename):
     # split each line into 3 parts: time, action, args
     # append a dict with "time", "action", "args", "done" to tasks
     # handle missing file gracefully
+    try:
+        with open(filename) as f:
+            for index, line in enumerate(f):
+                line = line.strip()
+                parts = line.split(" ")
+                time = parts[0]
+                action = parts[1]
+                args = " ".join(parts[2:])
+                isLastLine = index == (len(f.readlines()) - 1)
+                tasks.append(
+                    {"time": time, "action": action, "args": args, "done": isLastLine}
+                )
+    except FileNotFoundError:
+        print(f"Schedule file '{filename}' not found.")
+
     return tasks
 
 

@@ -1,13 +1,14 @@
 import os
 import time
 from datetime import datetime
+from datetime import time as dt_time
 from typing import Literal, TypedDict, cast
 
 Action = Literal["print", "list_files", "create_file"]
 
 
 class Task(TypedDict):
-    time: datetime
+    time: dt_time
     action: Action
     args: str
     done: bool
@@ -36,10 +37,10 @@ def load_schedule(filename: str) -> list[Task]:
                 if not line:
                     continue
                 parts = line.split(maxsplit=2)
-                if len(parts) < 2:
+                if len(parts) < 3:
                     continue
 
-                time = datetime.strptime(parts[0], "%H:%M:%S")
+                time = datetime.strptime(parts[0], "%H:%M:%S").time()
                 action = parse_action(parts[1])
                 if action is None:
                     print(f"Skipping invalid action: {parts[1]}")
@@ -69,7 +70,7 @@ def create_file(filename: str) -> None:
 def list_files(directory: str) -> None:
     """List files in the given directory."""
     files = os.listdir(directory)
-    print(f"Files in '{directory}': {', '.join(files)}")
+    print({", ".join(files)})
 
 
 def execute_action(action: Action, args: str) -> None:
@@ -101,11 +102,12 @@ def run_scheduler() -> None:
     print("Scheduler running... (Ctrl+C to stop)")
     try:
         while True:
-            now = datetime.now().strftime("%H:%M:%S")
+            now = datetime.now().time().replace(microsecond=0)
             # TODO: loop through tasks, execute if time matches and not done
             for task in tasks:
-                # if task["time"] == now and not task["done"]:
-                if not task["done"]:
+                if task["time"] == now and not task["done"]:
+                    # if not task["done"]:
+                    print(f"Executing task: {task['action']} {task['args']}")
                     execute_action(task["action"], task["args"])
                     task["done"] = True
             time.sleep(1)

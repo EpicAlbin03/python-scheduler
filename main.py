@@ -1,13 +1,21 @@
 import time
 from datetime import datetime
+from typing import TypedDict
 
 
-def load_schedule(filename):
+class Task(TypedDict):
+    time: str
+    action: str
+    args: str
+    done: bool
+
+
+def load_schedule(filename: str) -> list[Task]:
     """Read schedule.txt and return a list of tasks.
     Each line format: HH:MM:SS command argument
     Returns a list of dicts: {"time": "09:00:05", "action": "print", "args": "Hello!", "done": False}
     """
-    tasks = []
+    tasks: list[Task] = []
     # TODO: open the file, skip blank lines
     # split each line into 3 parts: time, action, args
     # append a dict with "time", "action", "args", "done" to tasks
@@ -30,7 +38,7 @@ def load_schedule(filename):
     return tasks
 
 
-def execute_action(action, args):
+def execute_action(action: str, args: str) -> None:
     """Execute a single action.
     Supported commands: print, list_files, create_file
     """
@@ -38,7 +46,7 @@ def execute_action(action, args):
     pass
 
 
-def run_scheduler():
+def run_scheduler() -> None:
     tasks = load_schedule("schedule.txt")
     if not tasks:
         print("No tasks loaded. Exiting.")

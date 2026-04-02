@@ -37,8 +37,6 @@ def load_schedule(filename: str) -> list[Task]:
                 if not line:
                     continue
                 parts = line.split(maxsplit=2)
-                if len(parts) < 3:
-                    continue
 
                 time = datetime.strptime(parts[0], "%H:%M:%S").time()
                 action = parse_action(parts[1])
@@ -105,7 +103,7 @@ def run_scheduler() -> None:
             now = datetime.now().time().replace(microsecond=0)
             # TODO: loop through tasks, execute if time matches and not done
             for task in tasks:
-                if task["time"] == now and not task["done"]:
+                if task["time"] <= now and not task["done"]:
                     # if not task["done"]:
                     print(f"Executing task: {task['action']} {task['args']}")
                     execute_action(task["action"], task["args"])
